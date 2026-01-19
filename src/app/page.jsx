@@ -6,7 +6,18 @@ import { Button } from "./compiler/Button";
 export default function Home() {
   const [value, setValue] = useState("")
   const [tasks, setTasks] = useState([])
+  const [isChecked, setIsChecked] = useState(false)
 
+  const Counter = () => {
+    return ( <div>
+    {isChecked ? (
+        <div className="flex w-86 justify-between border-t pt-4 border-[#E4E4E7] "><p>0 of 0 tasks completed</p> <button className="text-[#EF4444] cursor-pointer">Clear completed</button></div>
+      ) : (
+        <p>No tasks yet. Add one above!</p>
+      )}
+    </div>
+    )
+  }
 
   const clickAdd = () => {
 
@@ -47,12 +58,14 @@ export default function Home() {
         <div>
           {
             tasks.map((task) => (
-              <div className="bg-[#F9FAFB] flex items-center pl-4 gap-2.5 rounded-md mt-5 h-15.5" key={task.id}><input className="h-5 w-5" type="checkbox" />{task.text}</div>
+              <div className="bg-[#F9FAFB] flex items-center pl-4 gap-2.5 rounded-md mt-5 h-15.5" key={task.id}><input className="h-5 w-5" type="checkbox" checked={isChecked} onChange={(e) => setIsChecked(e.target.checked)}  />{task.text}</div>
             ))
           }
         </div>
       </section>
-      <div className="text-[#6B7280]">No tasks yet. Add one above!</div>
+      <div className="text-[#6B7280]">
+        <Counter />
+      </div>
       <footer className="text-[#6B7280] text-xs">Powered by <a className="text-[#3B73ED]" href="https://pinecone.mn/">Pincone academy</a></footer>
     </div>
   </div>
