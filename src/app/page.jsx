@@ -1,20 +1,50 @@
 "use client"
 
 import { useState } from "react"
-import { Button } from "./compiler/Button";
 
 export default function Home() {
+
   const [value, setValue] = useState("")
   const [tasks, setTasks] = useState([])
+  const [bttns, setBttns] = useState('all');
 
-  const checkedTrue = tasks.filter(task => task.checked===true)
-  const checkedFalse = tasks.filter(task => task.checked===false)
-  
+  const render = tasks.reduce((acc, task) => {
+    const isChecked = task.checked === false;
+    const tasksAll = bttns === 'all';
+    const tasksActive = bttns === 'active' && isChecked;
+    const tasksCompleted = bttns === 'completed' && !isChecked;
+
+    if (tasksAll || tasksActive || tasksCompleted) {
+      acc.push(task);
+    }
+
+    return acc;
+  }, []);
+
+  const clearChecked = tasks.filter(task => task.checked === false)
+
+  const completedDelete = (clearChecked) => {
+    if (window.confirm('Are you sure you want to clear all completed tasks?')) {
+      setTasks(clearChecked)
+    }
+  }
+
+  const Delete = (taskId) => {
+    if (window.confirm('Are you sure you want to delete this task?')) {
+      const deleted = tasks.filter((task) => task.id !== taskId)
+      setTasks(deleted)
+    }
+  }
 
   const Counter = () => {
     return (<div>
       {tasks.length > 0 ? (
-        <div className="flex w-86 justify-between border-t pt-4 border-[#E4E4E7] "><p>{checkedTrue.length} of {tasks.length} tasks completed</p> <button onClick={() => { setTasks(checkedFalse) }} className="text-[#EF4444] cursor-pointer">Clear completed</button></div>
+        <div className="flex w-86 justify-between border-t pt-4 border-[#E4E4E7] ">
+          <p>{tasks.length - clearChecked.length} of {tasks.length} tasks completed</p>
+          <button onClick={() => { completedDelete(clearChecked) }} className="text-[#EF4444] cursor-pointer">
+            Clear completed
+          </button>
+        </div>
       ) : (
         <p>No tasks yet. Add one above!</p>
       )}
@@ -28,9 +58,15 @@ export default function Home() {
       text: value,
       checked: false,
     };
-    const newTasks = [...tasks, task]
-    setTasks(newTasks)
-    setValue("")
+    console.log(task.checked);
+
+    if (value === "") {
+      return;
+    } else {
+      const newTasks = [...tasks, task]
+      setTasks(newTasks)
+      setValue("")
+    }
   }
 
   const handleChange = (event) => {
@@ -47,13 +83,8 @@ export default function Home() {
     setTasks(changed)
   }
 
-  const Delete = (taskId) => {
-    const deleted = tasks.filter((task) => task.id !== taskId)
-    setTasks(deleted)
-  }
-
-  return (<div className="flex justify-center items-center h-screen">
-    <div className="w-94 flex gap-5 flex-col items-center px-4 py-6 rounded-md shadow-[0px_0px_6px_0px_rgba(0,_0,_0,_0.1)]">
+  return (<div className="flex justify-center items-center">
+    <div className="w-94 my-15 flex gap-5 flex-col bg-white items-center px-4 py-6 rounded-md shadow-[0px_0px_10px_5px_rgba(0,_0,_0,_0.1)]">
       <header className="font-semibold text-xl">To-Do List</header>
       <section className="w-full flex flex-col">
         <div className="w-full flex gap-1.5">
@@ -64,22 +95,30 @@ export default function Home() {
             value={value}
             onChange={handleChange}
           />
-          <button onClick={clickAdd} className="h-10 bg-[#2463EB] text-white rounded-md w-15">Add</button>
+          <button onClick={clickAdd} className="h-10 bg-blue-400 cursor-pointer text-white rounded-md w-15">Add</button>
         </div>
         <div className="flex mt-5 gap-1.5">
-          <Button text="All" click={() => { setTasks(tasks) }} />
-          <Button text="Active" click={() => { setTasks(checkedFalse) }} />
-          <Button text="Completed" click={() => { setTasks(checkedTrue) }} />
+          <button className={`${bttns === 'all' ? ' bg-blue-400 text-white ' : ' text-black bg-gray-100 '} rounded-md px-3 h-8`} onClick={() => setBttns("all")} >
+            All
+          </button>
+          <button className={`${bttns === 'active' ? ' bg-blue-400 text-white ' : ' text-black bg-gray-100 '} rounded-md px-3 h-8`} onClick={() => setBttns("active")} >
+            Active
+          </button>
+          <button className={`${bttns === 'completed' ? ' bg-blue-400 text-white ' : ' text-black bg-gray-100 '} rounded-md px-3 h-8`} onClick={() => setBttns("completed")} >
+            Completed
+          </button>
         </div>
         <div>
           {
-            tasks.map((task) => (
-              <div className="bg-[#F9FAFB] justify-between flex items-center p-4 rounded-md mt-5 " key={task.id}>
-                <div className="flex gap-2.5 items-center">
-                  <input className="h-5 w-5" type="checkbox" checked={task.checked} onChange={() => changeCheck(task.id)} />
-                  <p className={`${task.checked && 'line-through'} w-full`}>{task.text}</p>
+            render.map((task) => (
+              <div className="bg-gray-50 group break-all flex items-center p-4 rounded-md mt-5 " key={task.id}>
+                <div className="flex items-center">
+                  <input className="h-5 absolute w-5" type="checkbox" checked={task.checked} onChange={() => changeCheck(task.id)} />
+                  <p className={`${task.checked && 'line-through'} ml-7.5 w-50`}>{task.text}</p>
                 </div>
-                <button onClick={Delete(task.id)} className="text-[#EF4444] bg-[#FEF2F2] rounded-md px-3 h-8 hover:text-[#FEF2F2] hover:bg-[#EF4444] mr-2 cursor-pointer">Delete</button>
+                <button onClick={() => { Delete(task.id) }} className={`${task.checked && 'visible'} ml-2.5 text-[#EF4444] invisible group-hover:visible bg-[#FEF2F2] rounded-md px-3 h-8 hover:text-[#FEF2F2] hover:bg-[#EF4444] cursor-pointer`}>
+                  Delete
+                </button>
               </div>
             ))
           }
