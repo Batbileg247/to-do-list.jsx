@@ -61,7 +61,7 @@ export default function Home() {
     console.log(task.checked);
 
     if (value === "") {
-      return;
+      return alert("Please enter a task!");
     } else {
       const newTasks = [...tasks, task]
       setTasks(newTasks)
